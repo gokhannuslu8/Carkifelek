@@ -82,28 +82,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     setStats(loadedStats);
   };
 
-  const clearWheel = () => {
-    Alert.alert(
-      "Çarkı Temizle",
-      "Tüm seçenekleri ve istatistikleri sıfırlamak istediğinizden emin misiniz?",
-      [
-        { text: "İptal", style: "cancel" },
-        {
-          text: "Temizle",
-          style: "destructive",
-          onPress: async () => {
-            setOptions([]);
-            const initialStats = { totalSpins: 0, lastSpinTime: Date.now(), optionStats: {} };
-            setStats(initialStats);
-            await saveWheelOptions([]);
-            await saveWheelStats(initialStats);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }
-        }
-      ]
-    );
-  };
-
   const spinWheel = async () => {
     if (isSpinning || options.length === 0) return;
 
@@ -204,9 +182,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.clearButton} onPress={clearWheel}>
-          <Text style={styles.clearButtonText}>Temizle</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate('Admin')}
@@ -293,14 +268,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#e2e8f0',
     letterSpacing: 1,
-  },
-  clearButton: {
-    padding: 10,
-  },
-  clearButtonText: {
-    fontSize: 16,
-    color: '#a0aec0',
-    fontWeight: '600',
   },
   settingsButton: {
     padding: 10,
