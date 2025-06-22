@@ -1,20 +1,44 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import HomeScreen from './src/screens/HomeScreen';
+import AdminScreen from './src/screens/AdminScreen';
+import ResultScreen from './src/screens/ResultScreen';
+
+export type RootStackParamList = {
+  Home: undefined;
+  Admin: undefined;
+  Result: { winner: string };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#667eea',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Admin" component={AdminScreen} />
+          <Stack.Screen name="Result" component={ResultScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
