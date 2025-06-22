@@ -9,6 +9,7 @@ import {
   StatusBar,
   useWindowDimensions,
   Platform,
+  Modal,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +21,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 import Wheel from '../components/Wheel';
 import { RootStackParamList, WheelOption, WheelStats } from '../types';
@@ -39,7 +41,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [options, setOptions] = useState<WheelOption[]>([]);
   const [stats, setStats] = useState<WheelStats>({ totalSpins: 0, lastSpinTime: Date.now(), optionStats: {} });
   const [isSpinning, setIsSpinning] = useState(false);
+  const [showResultPopup, setShowResultPopup] = useState(false);
+  const [winner, setWinner] = useState<string>('');
   const soundRef = useRef<Audio.Sound | null>(null);
+  const confettiRef = useRef<ConfettiCannon>(null);
   
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -131,7 +136,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      navigation.navigate('Result', { winner: winner.text });
+      // Popup'ı göster
+      setWinner(winner.text);
+      setShowResultPopup(true);
     }, spinDuration);
   };
 
@@ -170,6 +177,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return options[options.length - 1];
   };
 
+  const closeResultPopup = () => {
+    setShowResultPopup(false);
+    setWinner('');
+  };
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}rad` }, { scale: scale.value }],
   }));
@@ -201,7 +213,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <Wheel options={options} rotation={0} size={wheelSize} />
               </Animated.View>
               <TouchableOpacity
-                style={[styles.centerSpinButton, { width: wheelSize * 0.3, height: wheelSize * 0.3, borderRadius: (wheelSize * 0.3) / 2 }]}
+                style={[styles.centerSpinButton, { width: wheelSize * 0.25, height: wheelSize * 0.25, borderRadius: (wheelSize * 0.25) / 2 }]}
                 onPress={spinWheel}
                 disabled={isSpinning}
               >
@@ -238,6 +250,38 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             Çarkı çevirmek için lütfen ayarlardan seçenek ekleyin.
           </Text>
         </View>
+      )}
+
+      {/* Sonuç Popup'ı */}
+      <Modal
+        visible={showResultPopup}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeResultPopup}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.resultPopup}>
+            <Text style={styles.resultTitle}>Kazanan!</Text>
+            <Text style={styles.resultWinner}>{winner}</Text>
+            <TouchableOpacity style={styles.resultButton} onPress={closeResultPopup}>
+              <Text style={styles.resultButtonText}>Tamam</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Konfeti */}
+      {showResultPopup && (
+        <ConfettiCannon
+          ref={confettiRef}
+          count={200}
+          origin={{ x: screenWidth / 2, y: -10 }}
+          autoStart={true}
+          fadeOut={true}
+          fallSpeed={3000}
+          explosionSpeed={500}
+          colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3']}
+        />
       )}
     </View>
   );
@@ -376,6 +420,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultPopup: {
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    padding: 40,
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    marginHorizontal: 20,
+    minWidth: 280,
+  },
+  resultTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#667eea',
+    marginBottom: 20,
+  },
+  resultWinner: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#e67e22',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  resultButton: {
+    backgroundColor: '#667eea',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 20,
+  },
+  resultButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

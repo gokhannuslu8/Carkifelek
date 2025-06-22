@@ -6,12 +6,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import HomeScreen from './src/screens/HomeScreen';
 import AdminScreen from './src/screens/AdminScreen';
-import ResultScreen from './src/screens/ResultScreen';
 
 export type RootStackParamList = {
   Home: undefined;
   Admin: undefined;
-  Result: { winner: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -36,7 +34,6 @@ export default function App() {
         >
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Admin" component={AdminScreen} />
-          <Stack.Screen name="Result" component={ResultScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

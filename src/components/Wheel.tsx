@@ -62,7 +62,7 @@ const Wheel: React.FC<WheelProps> = ({ options, rotation, size, onPress }) => {
         <SvgText
           x={textX}
           y={textY}
-          fontSize={14}
+          fontSize={20}
           fontWeight="bold"
           fill="#fff"
           textAnchor="middle"

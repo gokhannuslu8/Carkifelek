@@ -21,5 +21,4 @@ export interface WheelState {
 export type RootStackParamList = {
   Home: undefined;
   Admin: undefined;
-  Result: { winner: string };
 }; 
