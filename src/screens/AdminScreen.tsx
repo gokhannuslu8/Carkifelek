@@ -18,8 +18,7 @@ import * as Haptics from 'expo-haptics';
 
 import { RootStackParamList, WheelOption } from '../types';
 import { loadWheelOptions, saveWheelOptions } from '../utils/storage';
-
-const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3'];
+import { getColorByIndex } from '../utils/colors';
 
 // State'i kendi içinde yöneten, odak kaybını önleyen form bileşeni
 const AddOptionForm = ({ onAddOption, isLandscape }: { onAddOption: (text: string, percentage: number) => void; isLandscape: boolean }) => {
@@ -96,7 +95,7 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
       id: Date.now().toString(),
       text: text.trim(),
       percentage,
-      color: colors[options.length % colors.length],
+      color: getColorByIndex(options.length),
     };
     const updatedOptions = [...options, newOption];
     setOptions(updatedOptions);
