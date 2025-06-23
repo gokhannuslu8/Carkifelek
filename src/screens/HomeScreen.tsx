@@ -22,6 +22,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import Wheel from '../components/Wheel';
 import { RootStackParamList, WheelOption, WheelStats } from '../types';
@@ -189,8 +190,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const wheelSize = Math.min(screenWidth, screenHeight) * 0.75;
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#4a5568" />
+    <LinearGradient
+      colors={['#2d3748', '#1a202c']}
+      style={styles.container}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#2d3748" />
       
       {/* Header */}
       <View style={styles.header}>
@@ -283,14 +287,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           colors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3']}
         />
       )}
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a202c',
     alignItems: 'center',
     justifyContent: 'center', 
     padding: 10,
