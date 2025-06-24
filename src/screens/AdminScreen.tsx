@@ -15,6 +15,7 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { RootStackParamList, WheelOption } from '../types';
 import { loadWheelOptions, saveWheelOptions } from '../utils/storage';
@@ -78,6 +79,9 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
   const isLandscape = screenWidth > screenHeight;
   
   const [options, setOptions] = useState<WheelOption[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [editPercentage, setEditPercentage] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -134,27 +138,87 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
+  const startEdit = (item: WheelOption) => {
+    setEditingId(item.id);
+    setEditText(item.text);
+    setEditPercentage(String(item.percentage));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
+    setEditPercentage('');
+  };
+
+  const saveEdit = async (id: string) => {
+    const updatedOptions = options.map(option =>
+      option.id === id ? { ...option, text: editText.trim(), percentage: parseFloat(editPercentage) } : option
+    );
+    setOptions(updatedOptions);
+    await saveWheelOptions(updatedOptions);
+    setEditingId(null);
+    setEditText('');
+    setEditPercentage('');
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
   const renderItem = ({ item }: { item: WheelOption }) => (
     <View style={[styles.optionCard, isLandscape && styles.optionCardLandscape]}>
-      <View style={styles.optionDetails}>
-        <View style={[styles.colorIndicator, { backgroundColor: item.color }]} />
-        <Text style={[styles.optionText, isLandscape && styles.optionTextLandscape]} numberOfLines={1}>
-          {item.text}
-        </Text>
+      <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'flex-start'}}>
+        <View style={styles.optionDetails}>
+          <View style={[styles.colorIndicator, { backgroundColor: item.color }]} />
+          {editingId === item.id ? (
+            <TextInput
+              style={[styles.textInput, {flex:1, marginBottom:0, marginRight:8}]}
+              value={editText}
+              onChangeText={setEditText}
+              autoFocus
+            />
+          ) : (
+            <Text style={[styles.optionText, isLandscape && styles.optionTextLandscape]} numberOfLines={1}>
+              {item.text}
+            </Text>
+          )}
+        </View>
+        <View style={{flexDirection:'row', alignItems:'center'}}>
+          {editingId === item.id ? (
+            <>
+              <TouchableOpacity onPress={() => saveEdit(item.id)} style={{marginRight:8}}>
+                <Text style={{fontSize:20}}>💾</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={cancelEdit}>
+                <Text style={{fontSize:20}}>❌</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity onPress={() => startEdit(item)} style={{marginRight:8}}>
+                <Text style={{fontSize:20}}>✏️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteOption(item.id)}>
+                <Text style={{fontSize:20}}>🗑️</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
-      <View style={[styles.optionActions, isLandscape && styles.optionActionsLandscape]}>
-        <TextInput
-          style={[styles.textInput, styles.optionProbabilityInput, isLandscape && styles.optionProbabilityInputLandscape]}
-          value={String(item.percentage)}
-          onChangeText={(text) => updatePercentage(item.id, text)}
-          keyboardType="numeric"
-        />
-        <TouchableOpacity
-          style={[styles.deleteButton, isLandscape && styles.deleteButtonLandscape]}
-          onPress={() => deleteOption(item.id)}
-        >
-          <Text style={styles.deleteButtonText}>SİL</Text>
-        </TouchableOpacity>
+      <View style={styles.optionActions}>
+        {editingId === item.id ? (
+          <TextInput
+            style={[styles.optionProbabilityInput, {marginBottom:0}]}
+            value={editPercentage}
+            onChangeText={setEditPercentage}
+            keyboardType="numeric"
+          />
+        ) : (
+          <TextInput
+            style={[styles.optionProbabilityInput, {marginBottom:0}]}
+            value={String(item.percentage)}
+            onChangeText={(text) => updatePercentage(item.id, text)}
+            keyboardType="numeric"
+            editable={editingId === null}
+          />
+        )}
       </View>
     </View>
   );
@@ -177,8 +241,10 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
       </View>
 
       <View style={[styles.contentContainer, isLandscape && styles.contentContainerLandscape]}>
-        <TouchableOpacity style={{backgroundColor:'#667eea',padding:10,borderRadius:10,alignItems:'center',marginBottom:10}} onPress={autoDistribute}>
-          <Text style={{color:'#fff',fontWeight:'bold',fontSize:16}}>Otomatik Dağıt</Text>
+        <TouchableOpacity style={{marginBottom:16, borderRadius:12, overflow:'hidden', elevation:3, shadowColor:'#667eea', shadowOpacity:0.3, shadowRadius:8}} onPress={autoDistribute}>
+          <LinearGradient colors={['#667eea', '#5f27cd']} start={{x:0,y:0}} end={{x:1,y:1}} style={{padding:14, alignItems:'center'}}>
+            <Text style={{color:'#fff',fontWeight:'bold',fontSize:17, letterSpacing:1}}>Otomatik Dağıt</Text>
+          </LinearGradient>
         </TouchableOpacity>
         <AddOptionForm onAddOption={addOption} isLandscape={isLandscape} />
         <FlatList
@@ -210,7 +276,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#2d3748',
+    backgroundColor: '#232b38',
+    borderBottomWidth: 1,
+    borderBottomColor: '#2d3748',
   },
   title: {
     color: '#e2e8f0',
@@ -236,10 +304,16 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   addSection: {
-    backgroundColor: '#2d3748',
-    borderRadius: 15,
-    padding: 20,
+    backgroundColor: '#232b38',
+    borderRadius: 16,
+    padding: 18,
     marginVertical: 15,
+    borderWidth: 1,
+    borderColor: '#2d3748',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   row: {
     flexDirection: 'row',
@@ -247,11 +321,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textInput: {
-    backgroundColor: '#4a5568',
+    backgroundColor: '#2d3748',
     color: '#e2e8f0',
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4a5568',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     fontSize: 16,
     marginBottom: 10,
   },
@@ -260,61 +336,80 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   addButton: {
-    backgroundColor: '#48bb78',
-    paddingHorizontal: 30,
+    backgroundColor: '#667eea',
+    borderRadius: 20,
     paddingVertical: 12,
-    borderRadius: 10,
-    height: 48,
+    paddingHorizontal: 32,
+    marginLeft: 8,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 1,
   },
   optionCard: {
-    backgroundColor: '#2d3748',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
+    backgroundColor: '#232b38',
+    borderRadius: 14,
+    padding: 18,
+    marginVertical: 14,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#2d3748',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
   },
   optionDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 8,
   },
   colorIndicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginRight: 15,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 10,
   },
   optionText: {
-    flex: 1,
     color: '#e2e8f0',
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 17,
+    fontWeight: '600',
+    flex: 1,
   },
   optionActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginTop: 6,
   },
   optionProbabilityInput: {
+    backgroundColor: '#2d3748',
+    color: '#e2e8f0',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4a5568',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 16,
+    marginRight: 10,
     flex: 1,
-    marginRight: 15,
-    marginBottom: 0,
-    textAlign: 'center',
   },
   deleteButton: {
-    backgroundColor: '#e53e3e',
-    paddingHorizontal: 25,
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: '#ff4d4f',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   deleteButtonText: {
     color: '#fff',
-    fontSize: 14,
     fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 1,
   },
   emptyText: {
     color: '#718096',
