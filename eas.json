@@ -17,5 +17,12 @@
   },
   "submit": {
     "production": {}
+  },
+  "expo": {
+    "splash": {
+      "image": "./assets/carkıfelek.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a202c"
+    }
   }
 }

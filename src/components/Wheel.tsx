@@ -76,6 +76,28 @@ const Wheel: React.FC<WheelProps> = ({ options, rotation, size, onPress }) => {
     );
   };
 
+  // İki ayrı yay için parametreler
+  const brandLeft = 'DÖRTYOL';
+  const brandRight = 'MARKET';
+  const brandColors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#fbbf24', '#f472b6', '#10b981'
+  ];
+  const arcRadius = RADIUS + 18;
+
+  // Sol yay (DÖRTYOL)
+  const arcStartLeft = -Math.PI / 1.15;
+  const arcEndLeft = -Math.PI / 1.65;
+  const arcAngleLeft = arcEndLeft - arcStartLeft;
+  const brandLeftLetters = brandLeft.split('');
+  const letterAngleStepLeft = arcAngleLeft / (brandLeftLetters.length - 1);
+
+  // Sağ yay (MARKET)
+  const arcStartRight = Math.PI / 1.65;
+  const arcEndRight = Math.PI / 1.15;
+  const arcAngleRight = arcEndRight - arcStartRight;
+  const brandRightLetters = brandRight.split('');
+  const letterAngleStepRight = arcAngleRight / (brandRightLetters.length - 1);
+
   return (
     <View style={{ alignItems: 'center' }}>
       <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>

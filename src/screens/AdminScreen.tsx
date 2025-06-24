@@ -11,6 +11,8 @@ import {
   FlatList,
   KeyboardAvoidingView,
   useWindowDimensions,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -82,6 +84,13 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
   const [editPercentage, setEditPercentage] = useState('');
+  const [colorModalVisible, setColorModalVisible] = useState(false);
+  const [colorEditId, setColorEditId] = useState<string | null>(null);
+
+  const colorPalette = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3',
+    '#e53e3e', '#fbbf24', '#10b981', '#6366f1', '#f472b6', '#f59e42', '#222b45', '#2d3748'
+  ];
 
   useFocusEffect(
     React.useCallback(() => {
@@ -162,11 +171,30 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
+  const openColorModal = (id: string) => {
+    setColorEditId(id);
+    setColorModalVisible(true);
+  };
+
+  const selectColor = async (color: string) => {
+    if (!colorEditId) return;
+    const updatedOptions = options.map(option =>
+      option.id === colorEditId ? { ...option, color } : option
+    );
+    setOptions(updatedOptions);
+    await saveWheelOptions(updatedOptions);
+    setColorModalVisible(false);
+    setColorEditId(null);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   const renderItem = ({ item }: { item: WheelOption }) => (
     <View style={[styles.optionCard, isLandscape && styles.optionCardLandscape]}>
       <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'flex-start'}}>
         <View style={styles.optionDetails}>
-          <View style={[styles.colorIndicator, { backgroundColor: item.color }]} />
+          <TouchableOpacity onPress={() => openColorModal(item.id)}>
+            <View style={[styles.colorIndicator, { backgroundColor: item.color, borderWidth:1, borderColor:'#fff' }]} />
+          </TouchableOpacity>
           {editingId === item.id ? (
             <TextInput
               style={[styles.textInput, {flex:1, marginBottom:0, marginRight:8}]}
@@ -259,7 +287,44 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
           keyboardShouldPersistTaps="handled"
           numColumns={isLandscape ? 2 : 1}
         />
+        <View style={styles.poweredByContainer}>
+          <Text style={styles.poweredByText}>powered by Gökhan Uslu</Text>
+          <Text style={styles.poweredByMail}>uslugokhn@gmail.com</Text>
+        </View>
       </View>
+      <Modal
+        visible={colorModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setColorModalVisible(false)}
+      >
+        <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.4)',justifyContent:'center',alignItems:'center'}}>
+          <View style={{backgroundColor:'#232b38',padding:20,borderRadius:20,alignItems:'center',maxWidth:320, minWidth:240, shadowColor:'#000', shadowOpacity:0.18, shadowRadius:16, shadowOffset:{width:0,height:4}}}>
+            <Text style={{color:'#fff',fontWeight:'bold',fontSize:15,marginBottom:14}}>Renk Seç</Text>
+            <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:0}}>
+              {colorPalette.map((color, idx) => (
+                <TouchableOpacity key={color} onPress={() => selectColor(color)} style={{margin:8}}>
+                  <View style={{
+                    width:32,
+                    height:32,
+                    borderRadius:16,
+                    backgroundColor:color,
+                    borderWidth: colorEditId && options.find(o=>o.id===colorEditId)?.color===color ? 3 : 2,
+                    borderColor: colorEditId && options.find(o=>o.id===colorEditId)?.color===color ? '#fff' : '#444',
+                    shadowColor:'#000',
+                    shadowOpacity:0.10,
+                    shadowRadius:4,
+                    shadowOffset:{width:0,height:2},
+                  }} />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => setColorModalVisible(false)} style={{marginTop:10}}>
+              <Text style={{color:'#a0aec0',fontSize:13}}>Vazgeç</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -475,6 +540,24 @@ const styles = StyleSheet.create({
   deleteButtonLandscape: {
     alignSelf: 'stretch',
     alignItems: 'center',
+  },
+  poweredByContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 8,
+    opacity: 0.35,
+  },
+  poweredByText: {
+    fontSize: 14,
+    color: '#e2e8f0',
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  poweredByMail: {
+    fontSize: 13,
+    color: '#e2e8f0',
+    marginTop: 2,
+    letterSpacing: 0.5,
   },
 });
 

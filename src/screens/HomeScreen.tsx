@@ -23,6 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Text as SvgText } from 'react-native-svg';
 
 import Wheel from '../components/Wheel';
 import { RootStackParamList, WheelOption, WheelStats } from '../types';
@@ -44,6 +45,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResultPopup, setShowResultPopup] = useState(false);
   const [winner, setWinner] = useState<string>('');
+  const [lastWinner, setLastWinner] = useState<string>('');
   const soundRef = useRef<Audio.Sound | null>(null);
   const confettiRef = useRef<ConfettiCannon>(null);
   
@@ -51,6 +53,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const scale = useSharedValue(1);
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3'];
+
+  const wheelSize = Math.min(screenWidth, screenHeight) * 0.75;
+
+  // Sabit yay başlıklar için parametreler (wheelSize'dan sonra)
+  const brandLeft = 'DÖRTYOL';
+  const brandRight = 'MARKET';
+  const brandColors = [
+    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#fbbf24', '#f472b6', '#10b981'
+  ];
+  const CENTER = wheelSize / 2;
+  const RADIUS = CENTER - 10;
+  const arcRadius = RADIUS + 18;
+  // Sol yay (DÖRTYOL)
+  const arcStartLeft = -Math.PI / 1.15;
+  const arcEndLeft = -Math.PI / 1.65;
+  const arcAngleLeft = arcEndLeft - arcStartLeft;
+  const brandLeftLetters = brandLeft.split('');
+  const letterAngleStepLeft = arcAngleLeft / (brandLeftLetters.length - 1);
+  // Sağ yay (MARKET)
+  const arcStartRight = Math.PI + Math.PI / 1.65;
+  const arcEndRight = Math.PI + Math.PI / 1.15;
+  const arcAngleRight = arcEndRight - arcStartRight;
+  const brandRightLetters = brandRight.split('');
+  const letterAngleStepRight = arcAngleRight / (brandRightLetters.length - 1);
 
   const loadSound = async () => {
     try {
@@ -140,6 +166,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       // Popup'ı göster
       setWinner(winner.text);
       setShowResultPopup(true);
+      setLastWinner(winner.text);
     }, spinDuration);
   };
 
@@ -177,8 +204,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     transform: [{ rotate: `${rotation.value}rad` }, { scale: scale.value }],
   }));
 
-  const wheelSize = Math.min(screenWidth, screenHeight) * 0.75;
-
   return (
     <LinearGradient
       colors={['#2d3748', '#1a202c']}
@@ -200,6 +225,57 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <View style={styles.mainContent}>
         {/* Çark ve Pointer */}
         <View style={[styles.wheelContainer, { width: wheelSize, height: wheelSize }]}>
+          {/* Sabit yay başlıklar */}
+          <Svg width={wheelSize} height={wheelSize} style={{position:'absolute',top:0,left:0,pointerEvents:'none',zIndex:20}}>
+            {/* Sol yay: DÖRTYOL */}
+            {brandLeftLetters.map((char, i) => {
+              const angle = arcStartLeft + i * letterAngleStepLeft;
+              const x = CENTER + arcRadius * Math.cos(angle);
+              const y = CENTER + arcRadius * Math.sin(angle) - 4;
+              const rotate = (angle * 180) / Math.PI + 90;
+              return (
+                <SvgText
+                  key={'left' + i}
+                  x={x}
+                  y={y}
+                  fontSize={28}
+                  fontWeight="bold"
+                  fill={brandColors[i % brandColors.length]}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  transform={`rotate(${rotate}, ${x}, ${y})`}
+                  opacity={0.9}
+                  letterSpacing={0.1}
+                >
+                  {char}
+                </SvgText>
+              );
+            })}
+            {/* Sağ yay: MARKET */}
+            {brandRightLetters.map((char, i) => {
+              const angle = arcStartRight + i * letterAngleStepRight;
+              const x = CENTER + arcRadius * Math.cos(angle);
+              const y = CENTER + arcRadius * Math.sin(angle) - 4;
+              const rotate = (angle * 180) / Math.PI + 90;
+              return (
+                <SvgText
+                  key={'right' + i}
+                  x={x}
+                  y={y}
+                  fontSize={28}
+                  fontWeight="bold"
+                  fill={brandColors[(i + 7) % brandColors.length]}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  transform={`rotate(${rotate}, ${x}, ${y})`}
+                  opacity={0.9}
+                  letterSpacing={0.5}
+                >
+                  {char}
+                </SvgText>
+              );
+            })}
+          </Svg>
           {options.length > 0 ? (
             <>
               <View style={styles.pointer} />
@@ -230,8 +306,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Son Kazanan</Text>
             <Text style={styles.statValue} numberOfLines={1}>
-              {Object.keys(stats.optionStats).length > 0 ? 
-                options.find(opt => opt.id === Object.keys(stats.optionStats).pop())?.text || '-' : '-'}
+              {lastWinner || '-'}
             </Text>
           </View>
         </View>
