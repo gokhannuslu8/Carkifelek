@@ -125,6 +125,15 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
     await saveWheelOptions(updatedOptions);
   };
 
+  const autoDistribute = async () => {
+    if (options.length === 0) return;
+    const equalPercent = +(100 / options.length).toFixed(2);
+    const updatedOptions = options.map(option => ({ ...option, percentage: equalPercent }));
+    setOptions(updatedOptions);
+    await saveWheelOptions(updatedOptions);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
   const renderItem = ({ item }: { item: WheelOption }) => (
     <View style={[styles.optionCard, isLandscape && styles.optionCardLandscape]}>
       <View style={styles.optionDetails}>
@@ -168,6 +177,9 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
       </View>
 
       <View style={[styles.contentContainer, isLandscape && styles.contentContainerLandscape]}>
+        <TouchableOpacity style={{backgroundColor:'#667eea',padding:10,borderRadius:10,alignItems:'center',marginBottom:10}} onPress={autoDistribute}>
+          <Text style={{color:'#fff',fontWeight:'bold',fontSize:16}}>Otomatik Dağıt</Text>
+        </TouchableOpacity>
         <AddOptionForm onAddOption={addOption} isLandscape={isLandscape} />
         <FlatList
           data={options}

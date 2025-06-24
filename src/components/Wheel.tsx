@@ -22,9 +22,10 @@ const Wheel: React.FC<WheelProps> = ({ options, rotation, size, onPress }) => {
   const totalPercentage = options.reduce((sum, option) => sum + option.percentage, 0);
   let currentAngle = rotation;
 
+  const sliceAngle = 2 * Math.PI / options.length;
+
   const createSlice = (option: WheelOption, index: number) => {
-    // Yüzdelik sistemde: percentage / totalPercentage
-    const sliceAngle = (option.percentage / totalPercentage) * 2 * Math.PI;
+    // Eşit dilim açısı
     const startAngle = currentAngle;
     const endAngle = currentAngle + sliceAngle;
 
@@ -62,7 +63,7 @@ const Wheel: React.FC<WheelProps> = ({ options, rotation, size, onPress }) => {
         <SvgText
           x={textX}
           y={textY}
-          fontSize={20}
+          fontSize={18}
           fontWeight="bold"
           fill="#fff"
           textAnchor="middle"

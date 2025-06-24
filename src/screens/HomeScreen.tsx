@@ -144,23 +144,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const calculateAngleForWinner = (winner: WheelOption): number => {
-    const totalPercentage = options.reduce((sum, opt) => sum + opt.percentage, 0);
-    if (totalPercentage === 0) return 0;
-
-    let accumulatedAngle = 0;
-    // SVG çizimi 0 derece (sağ taraf) ile başlar ve saat yönünün tersine artar.
-    // Pointer tepede (270 derece).
-    for (const option of options) {
-      const sliceAngle = (option.percentage / totalPercentage) * 360;
-      if (option.id === winner.id) {
-        const middleOfSlice = accumulatedAngle + sliceAngle / 2;
-        // Bu dilimin ortasını tepeye (270) getirmek için gereken rotasyon.
-        const targetRotation = 270 - middleOfSlice;
-        return targetRotation;
-      }
-      accumulatedAngle += sliceAngle;
-    }
-    return 0; // Bu durumun yaşanmaması gerekir
+    const index = options.findIndex(opt => opt.id === winner.id);
+    if (index === -1) return 0;
+    const sliceAngle = 360 / options.length;
+    // Dilimin ortasını tepeye (270 derece) getirmek için gereken rotasyon
+    const middleOfSlice = index * sliceAngle + sliceAngle / 2;
+    const targetRotation = 270 - middleOfSlice;
+    return targetRotation;
   };
 
   // Yüzdelik sisteme göre kazananı belirle (Bu fonksiyon doğru ve kalıyor)
