@@ -67,12 +67,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const arcRadius = RADIUS + 18;
   // Sol yay (DÖRTYOL)
   const arcStartLeft = -Math.PI / 1.15;
-  const arcEndLeft = -Math.PI / 1.65;
+  const arcEndLeft = -Math.PI / 1.60;
   const arcAngleLeft = arcEndLeft - arcStartLeft;
   const brandLeftLetters = brandLeft.split('');
   const letterAngleStepLeft = arcAngleLeft / (brandLeftLetters.length - 1);
   // Sağ yay (MARKET)
-  const arcStartRight = Math.PI + Math.PI / 1.65;
+  const arcStartRight = Math.PI + Math.PI / 1.60;
   const arcEndRight = Math.PI + Math.PI / 1.15;
   const arcAngleRight = arcEndRight - arcStartRight;
   const brandRightLetters = brandRight.split('');
@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    marginTop: 40,
   },
   pointer: {
     width: 0,

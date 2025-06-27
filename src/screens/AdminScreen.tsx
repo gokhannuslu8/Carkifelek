@@ -208,7 +208,7 @@ const AdminScreen: React.FC<AdminScreenProps> = ({ navigation }) => {
             </Text>
           )}
         </View>
-        <View style={{flexDirection:'row', alignItems:'center'}}>
+        <View style={styles.optionActions}>
           {editingId === item.id ? (
             <>
               <TouchableOpacity onPress={() => saveEdit(item.id)} style={{marginRight:8}}>
@@ -432,6 +432,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    flex: 1,
   },
   colorIndicator: {
     width: 12,
@@ -448,6 +449,9 @@ const styles = StyleSheet.create({
   optionActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    minWidth: 60,
+    flexShrink: 0,
     marginTop: 6,
   },
   optionProbabilityInput: {
